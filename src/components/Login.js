@@ -5,16 +5,30 @@ import "./Login.css";
 const Login = ({ setIsAuthenticated }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    
-    if (email === "123@123" && password === "123") {
-      setIsAuthenticated(true); // Update login state
-      navigate("/home"); // Redirect to Home Page
-    } else {
-      alert("Invalid Credentials!"); // Show alert for wrong details
+
+    try {
+      const response = await fetch("http://localhost:5000/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem("token", data.token);
+        setIsAuthenticated(true);
+        navigate("/home");
+      } else {
+        setError(data.message);
+      }
+    } catch (error) {
+      setError("Something went wrong! Try again.");
     }
   };
 
@@ -43,6 +57,7 @@ const Login = ({ setIsAuthenticated }) => {
               required
             />
           </div>
+          {error && <p className="error-message">{error}</p>}
           <button type="submit" className="login-btn">Login</button>
           <p className="signup-link">
             Don't have an account? <a href="/signup">Sign up</a>

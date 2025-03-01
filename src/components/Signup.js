@@ -10,7 +10,7 @@ const Signup = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleSignup = (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
@@ -18,12 +18,24 @@ const Signup = () => {
       return;
     }
 
-    // Save user details to localStorage
-    const user = { username, email, password };
-    localStorage.setItem("user", JSON.stringify(user));
+    try {
+      const response = await fetch("http://localhost:5000/api/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, email, password }),
+      });
 
-    setError("");
-    navigate("/login");
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("Signup successful! Redirecting to login...");
+        navigate("/login", { replace: true });
+      } else {
+        setError(data.message || "Signup failed! Try again.");
+      }
+    } catch (error) {
+      setError("Something went wrong! Please try again.");
+    }
   };
 
   return (
